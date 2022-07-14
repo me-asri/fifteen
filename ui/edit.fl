@@ -1,0 +1,45 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0308
+header_name {.h}
+code_name {.cxx}
+class EditDialog {open selected
+} {
+  Function {EditDialog()} {open
+  } {
+    Fl_Window window {
+      label Edit open
+      private xywh {1 29 130 75} type Single
+      code0 {Fl_Window *prevWin{Fl::first_window()};}
+      code1 {o->position(prevWin->x() + (prevWin->w() - o->w()) / 2, prevWin->y() + (prevWin->h() - o->h()) / 2);} modal visible
+    } {
+      Fl_Input valueInput {
+        label {Value:}
+        xywh {50 7 75 28}
+      }
+      Fl_Button cancelButton {
+        label Cancel
+        xywh {65 40 60 30}
+      }
+      Fl_Return_Button editButton {
+        label Edit
+        xywh {5 40 60 30}
+      }
+    }
+  }
+  Function {~EditDialog()} {open
+  } {
+    code {delete window;} {}
+  }
+  Function {show()} {open return_type void
+  } {
+    code {window->show();} {}
+  }
+  Function {shown()} {open return_type bool
+  } {
+    code {return window->shown();} {}
+  }
+  Function {hide()} {open
+  } {
+    code {window->hide();} {}
+  }
+}
