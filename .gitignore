@@ -1,1 +1,7 @@
 **/.vscode/
+
+obj/
+bin/
+
+ui/__inc__/
+ui/__obj__/

@@ -1,41 +1,70 @@
-CXX         = g++
-LINK        = $(CXX)
-CXXFLAGS    = -std=c++17 -Wall -O2 -g
-LDFLAGS     =
-# Append FLTK specific flags
-CXXFLAGS   += $(shell fltk-config --use-images --cxxflags)
-LDFLAGS    += $(shell fltk-config --use-images --ldflags)
+SRCDIR    := src
+INCDIR    := inc
+UIDIR     := ui
+OBJDIR    := obj
+BINDIR    := bin
 
-TARGET      = fifteen
-SOURCES     = $(wildcard *.cpp)
-DEPS        = $(wildcard *.h)
-OBJECTS     = $(SOURCES:.cpp=.o)
+SRCEXT    := cpp
+DEPEXT    := h
+FLEXT     := fl
+OBJEXT    := o
 
-UI_SOURCES  = $(wildcard ui/*.fl)
-UI_OBJECTS  = $(UI_SOURCES:.fl=.o)
+CXX       := g++
+CXXFLAGS  := -std=c++17 -Wall -Werror -O3 -g
+INC       := -I$(INCDIR)
+LIB       :=
 
-# Use .exe suffix for binaries in Windows
+FLUID     := fluid
+FLTKFLAGS :=
+
+TARGET    := fifteen
+
+# Add .exe suffix for binaries if using Windows
 ifeq ($(OS),Windows_NT)
 	TARGET := $(TARGET).exe
 endif
 
-.PHONY: all ui clean clean-all
+SRCS      := $(wildcard $(SRCDIR)/*.$(SRCEXT) $(SRCDIR)/**/*.$(SRCEXT))
+DEPS      := $(wildcard $(INCDIR)/*.$(DEPEXT) $(INCDIR)/**/*.$(DEPEXT))
+OBJS      := $(patsubst $(SRCDIR)/%, $(OBJDIR)/%, $(SRCS:.$(SRCEXT)=.$(OBJEXT)))
+BIN       := $(BINDIR)/$(TARGET)
+
+# Add FLTK specific flags
+CXXFLAGS  += $(shell fltk-config --cxxflags $(FLTKFLAGS))
+LIB       += $(shell fltk-config --ldflags $(FLTKFLAGS))
+
+# Add FLTK UI objects
+FLOBJDIR  := $(UIDIR)/__obj__
+FLINCDIR  := $(UIDIR)/__inc__
+FLS       := $(wildcard $(UIDIR)/*.$(FLEXT)) $(wildcard $(UIDIR)/**/*.$(FLEXT))
+OBJS      += $(patsubst $(UIDIR)/%, $(FLOBJDIR)/%, $(FLS:.$(FLEXT)=.$(FLEXT).$(OBJEXT)))
+INC       += -I$(FLINCDIR)
+
+export CXX CXXFLAGS FLUID SRCEXT DEPEXT FLEXT OBJEXT
+
+.PHONY: all ui clean
 
 all: ui
-	$(MAKE) $(TARGET)
-
-clean:
-	rm -f $(TARGET) $(OBJECTS)
-
-clean-all:
-	$(MAKE) -C ui clean
-	$(MAKE) clean
+	@echo + Building $(TARGET)
+	@$(MAKE) $(BIN)
 
 ui:
-	$(MAKE) -C ui all
+	@echo + Building UI
+	@$(MAKE) -C $(UIDIR)
 
-$(TARGET): $(OBJECTS) $(UI_OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+$(BIN): $(OBJS)
+	@mkdir -p $(BINDIR)
 
-%.o %.fl.o: %.cpp $(DEPS)
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -o $(BIN) $^ $(LIB)
+	@echo + Built $(TARGET)
+
+$(OBJDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT) $(DEPS)
+	@mkdir -p $(dir $@)
+
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INC)
+
+clean:
+	$(RM) -r $(OBJDIR) $(BINDIR)
+
+cleaner: clean
+	@$(MAKE) -C $(UIDIR) clean

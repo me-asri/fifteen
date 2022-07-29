@@ -10,8 +10,8 @@
 #include <Fl/Fl_Widget.H>
 #include <Fl/fl_ask.H>
 
-#include "ui/main.h"
-#include "ui/edit.h"
+#include "main.fl.h"
+#include "edit.fl.h"
 
 #include "strings.h"
 #include "puzzle.h"
